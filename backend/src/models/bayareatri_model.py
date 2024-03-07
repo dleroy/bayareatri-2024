@@ -11,7 +11,7 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
-class RVenueitem(Base):
+class Venueitem(Base):
     __tablename__ = 'r_venueitem'
 
     r_VenueId = Column(INTEGER, primary_key=True, server_default=text("'0'"))
@@ -34,7 +34,7 @@ class RVenueitem(Base):
     r_VenueCurrent = Column(TINYINT(1))
 
 
-class RVenuelocateitem(Base):
+class VenueLocationitem(Base):
     __tablename__ = 'r_venuelocateitem'
     __table_args__ = {'comment': 'Lat/Long for each unique venue location'}
 
@@ -44,7 +44,7 @@ class RVenuelocateitem(Base):
     r_VenueLong = Column(Float(9), nullable=False, server_default=text("'0.000000'"))
 
 
-class RRaceitem(Base):
+class Raceitem(Base):
     __tablename__ = 'r_raceitem'
 
     r_RaceId = Column(INTEGER(10), primary_key=True, server_default=text("'0000000000'"))
@@ -62,7 +62,7 @@ class RRaceitem(Base):
     r_venueitem = relationship('RVenueitem')
 
 
-t_r_resultitem = Table(
+Resultitem = Table(
     'r_resultitem', metadata,
     Column('r_Id', INTEGER, nullable=False, unique=True),
     Column('r_RaceId', ForeignKey('r_raceitem.r_RaceId'), nullable=False, index=True, server_default=text("'0000000000'")),
