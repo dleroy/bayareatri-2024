@@ -17,7 +17,7 @@ class Query:
         return race_data_list
 
     @strawberry.field
-    async def results(self, id: int) -> List[Result]:
-        """ Get all results """
-        result_data_list = await get_results(id)
+    async def results(self, raceid: int) -> List[Result]:
+        """ Get all results"""
+        result_data_list = await get_results_by_id(raceid)
         return result_data_list
