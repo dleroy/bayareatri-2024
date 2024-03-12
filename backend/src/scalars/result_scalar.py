@@ -1,11 +1,13 @@
 from datetime import time
 import strawberry
+#from race_scalar import Race
 
 # XXX Todo create enums for r_Division and r_Gender. See https://strawberry.rocks/docs/types/enums
 @strawberry.type
 class Result:
     r_Id: int
-    r_RaceId: int
+#    r_RaceId: "Race"
+    r_RaceId: int = strawberry.field(description="Race ID in form of a date YYYYMMDDxx.")
     r_BibNumber: int
     r_OverallPlace: int
     r_DivisionPlace: int
@@ -48,3 +50,17 @@ class Result:
     r_Penalty: time
     r_HawaiiQual: bool
     r_HalfQual: bool
+
+@strawberry.type
+class UserResult:
+    r_RaceDate: int
+    r_LastName: str
+    r_FirstName: str
+    r_TotalTime: time
+    r_OverallPlace: int
+    r_DivisionPlace: int
+    r_Age: int
+    r_SwimTime: time
+    r_BikeTime: time
+    r_RunTime: time
+    r_VenueName: str
