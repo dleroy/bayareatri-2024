@@ -1,72 +1,93 @@
 from sqlalchemy import select
+from sqlalchemy.orm import subqueryload,load_only
 
 from db.db import get_session
-from models import bayareatri_model
+from helpers.helper import get_only_selected_fields, get_valid_data
+from models.bayareatri_model import RRaceitem, RResultitem, RVenueitem
 
 from scalars.race_scalar import Race
 from scalars.result_scalar import Result
 from scalars.venue_scalar import Venue
 
 
-
-async def get_races():
-    """ Get all races resolver """
-    async with get_session() as s:
-        sql = select(bayareatri_model.RRaceitem).order_by(bayareatri_model.RRaceitem.r_RaceId)
-        db_races = (await s.execute(sql)).scalars().unique().all()
-    race_list = []
-    for races in db_races:
-        race_dict = get_valid_data(races, bayareatri_model.RRaceitem)
-        race_list.append(Race(**race_dict))
-    return race_list
-
-async def get_results_by_id(raceid: int):
+async def get_results(info):
     """ Get all results resolver """
+    selected_fields = get_only_selected_fields(RResultitem,info)
     async with get_session() as s:
-        sql = select(bayareatri_model.RResultitem).where(bayareatri_model.RResultitem.r_RaceId == raceid)
+        sql = select(RResultitem).options(load_only(*selected_fields)) \
+        .order_by(RResultitem.r_DivisionPlace)
         db_results = (await s.execute(sql)).scalars().unique().all()
-    result_list = []
-    for races in db_results:
-        result_dict = get_valid_data(races, bayareatri_model.RResultitem)
-        result_list.append(Result(**result_dict))
-    return result_list
 
-async def get_user_results_by_name(firstname: str, lastname: str):
-    """ Get all user results resolver """
+    results_data_list = []
+    for result in db_results:
+        result_dict = get_valid_data(result,RResultitem)
+        results_data_list.append(Result(**result_dict))
+
+    return results_data_list
+
+async def get_result(raceid, info):
+    """ Get specific results by raceid resolver """
+    selected_fields = get_only_selected_fields(RResultitem,info)
     async with get_session() as s:
-        sql = select(bayareatri_model.RResultitem).where(bayareatri_model.RResultitem.r_FirstName.ilike(firstname) & bayareatri_model.RResultitem.r_LastName.ilike(lastname))
+        sql = select(RResultitem).options(load_only(*selected_fields)).join(RResultitem.r_raceitem) \
+        .filter(RResultitem.r_RaceId == raceid).order_by(RResultitem.r_OverallPlace)
         db_results = (await s.execute(sql)).scalars().unique().all()
-    result_list = []
-    for races in db_results:
-        result_dict = get_valid_data(races, bayareatri_model.RResultitem)
-        result_list.append(Result(**result_dict))
-    return result_list
+    
+    results_data_list = []
+    for result in db_results:
+        result_dict = get_valid_data(result,RResultitem)
+        results_data_list.append(Result(**result_dict))
 
-def get_valid_data(model_data_object, model_class):
-    data_dict = {}
-    for column in model_class.__table__.columns:
-        try:
-            data_dict[column.name] = getattr(model_data_object, column.name)
-        except:
-            pass
-    return data_dict
+    return results_data_list
 
-#
-#Results query
-#$query = "select * from r_resultitem where r_LastName like '" . $lastn . "%' and r_FirstName like '" . $firstn . "%'
-#          order by CAST(r_RaceId as unsigned) DESC";
+async def get_races(info):
+    """ Get all races resolver """
+    selected_fields = get_only_selected_fields(RRaceitem,info)
+    async with get_session() as s:
+        sql = select(RRaceitem).options(load_only(*selected_fields)) \
+        .order_by(RRaceitem.r_RaceId)
+        db_races = (await s.execute(sql)).scalars().unique().all()
 
+    races_data_list = []
+    for race in db_races:
+        race_dict = get_valid_data(race,RRaceitem)
+        races_data_list.append(Race(**race_dict))
 
-#            $racename = find_racename_by_id($row['r_RaceId']);
-#    $venuequery = "select * from r_venueitem
-#                 where r_VenueId = '$venueid->r_RaceVenueId'";                                          
+    return races_data_list
 
-#            $raceinfo = find_raceinfo_by_id($row['r_RaceId']);
-# // We retreive race date in 2 different printable formats, different from way stored in MySQL
-#    // fulldate:  June 21, 2005
-#    // fmtdate:   06/21/2005
-#    // MySQL default  2005-06-21
-#    $infoquery = 'select *, date_format( r_RaceDate, \'%M %e, %Y\' ) as fulldate' .
-#        ', date_format( r_RaceDate, \'%m/%d/%Y\' ) as fmtdate' .
-#        ' from r_raceitem where' .
-#        " r_RaceID='$raceid'";
+async def get_race(raceid, info):
+    """ Get specific race by id resolver """
+    selected_fields = get_only_selected_fields(RRaceitem,info)
+    async with get_session() as s:
+        sql = select(RRaceitem).options(load_only(*selected_fields)) \
+        .filter(RRaceitem.r_RaceId == raceid).order_by(RRaceitem.r_RaceId)
+        db_race = (await s.execute(sql)).scalars().unique().one()
+    
+    race_dict = get_valid_data(db_race,RRaceitem)
+    return Race(**race_dict)
+
+async def get_venues(info):
+    """ Get all races resolver """
+    selected_fields = get_only_selected_fields(RVenueitem,info)
+    async with get_session() as s:
+        sql = select(RVenueitem).options(load_only(*selected_fields)) \
+        .order_by(RVenueitem.r_VenueId)
+        db_venues = (await s.execute(sql)).scalars().unique().all()
+
+    venues_data_list = []
+    for venue in db_venues:
+        venue_dict = get_valid_data(venue,RVenueitem)
+        venues_data_list.append(Venue(**venue_dict))
+
+    return venues_data_list
+
+async def get_venue(venueid, info):
+    """ Get specific venue by id resolver """
+    selected_fields = get_only_selected_fields(RVenueitem,info)
+    async with get_session() as s:
+        sql = select(RVenueitem).options(load_only(*selected_fields))\
+        .filter(RVenueitem.r_VenueId == venueid).order_by(RVenueitem.r_VenueId)
+        db_venue = (await s.execute(sql)).scalars().unique().one()
+    
+    venue_dict = get_valid_data(db_venue,RVenueitem)
+    return Venue(**venue_dict)
