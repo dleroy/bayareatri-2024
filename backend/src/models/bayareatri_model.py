@@ -20,7 +20,7 @@ class RVenueitem(Base):
     r_VenueId = Column(INTEGER, primary_key=True, server_default=text("'0'"))
     r_VenueInstance = Column(INTEGER, nullable=False, server_default=text("'0'"))
     r_VenueName = Column(String(128))
-    r_VenueEventType = Column(Enum('TRIATHLON', 'DUATHLON', 'SPLASHNDASH', 'AQUABIKE'), nullable=False, server_default=text("'TRIATHLON'"))
+    r_VenueEventType = Column(Enum('TRIATHLON','DUATHLON','SPLASHNDASH','AQUABIKE'), nullable=False, server_default=text("'TRIATHLON'"))
     r_VenueType = Column(Enum('OTHER', 'MTNBIKE', 'SPRINT', 'OLYMPIC', 'INTL', 'HALF', 'IM'))
     r_VenueSwim = Column(Float)
     r_VenueSwimunits = Column(Enum('KMS', 'YARDS', 'MILES'))
